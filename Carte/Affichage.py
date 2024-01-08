@@ -26,6 +26,19 @@ def affiche(carte, tailles=[120,200], assets=ASSETS, tile_centers = None, marges
             for key in ["terrain","ressource","batiment"]:
                 if tile[key] == "":
                     continue
+                if tile[key] in ["forest", "mountain"]:
+                    asset = assets[tile["tribu"]]["field"]
+                    image = asset["image"]
+                    shape = copy(asset["shape"])
+                    decalage = copy(asset["decalage"])
+                    overlay = copy(image)
+                    B,G,R = copy(overlay[:,:,0]),copy(overlay[:,:,1]),copy(overlay[:,:,2])
+                    overlay[:,:,0],overlay[:,:,1],overlay[:,:,2] = R,G,B
+                    width,length = overlay.shape[:2]
+                    size = (int((width*tailles[1])/shape[1]),int((length*tailles[0])/shape[0]))
+                    overlay = cv.resize(overlay,size)
+                    decalage = (int((decalage[0]*tailles[0])/120),int((decalage[1]*tailles[1])/200))
+                    put4ChannelImageOn4ChannelImageNice(background, overlay, tile_centers[i][j][0] -100 + decalage[0], tile_centers[i][j][1] - 60 + decalage[1])
                 asset = assets[tile["tribu"]][tile[key]]
                 image = asset["image"]
                 shape = copy(asset["shape"])

@@ -58,7 +58,12 @@ for tribe in TRIBUS:
     ASSETS[tribe]["forest"]["decalage"][0]=-20
     ASSETS[tribe]["forest"]["decalage"][1]=-290
 
+    ASSETS[tribe]["Crop"]["decalage"][1]=-210
+
     ASSETS[tribe]["fruit"]["shape"] = [600,1000]
+
+    ASSETS[tribe]["Village"]["shape"][0]/=2
+    ASSETS[tribe]["Village"]["shape"][1]/=2
 
 ASSETS["Ai-mo"]["mountain"]["decalage"][1]=-470
 ASSETS["Bardur"]["mountain"]["decalage"][1]=-330

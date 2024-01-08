@@ -19,6 +19,7 @@ class Tribes(StrEnum):
     ZEBASI = "zebasi"
 
 class Resources(StrEnum):
+    NONE = ""
     FRUIT = "fruit"
     CROP = "crop"
     GAME = "game"
@@ -27,16 +28,15 @@ class Resources(StrEnum):
     STARFISH = "starfish"
     METAL = "metal"
     AQUACROP = "aquacrop"
-    NONE = ""
 
 class Improvements(StrEnum):
+    NONE = ""
     CITY = "city"
     RUIN = "ruin"
-    NONE = ""
 
 class Terrains(StrEnum):
-    WATER = "water"
     OCEAN = "ocean"
+    WATER = "water"
     FIELD = "field"
     FOREST = "forest"
     MOUNTAIN = "mountain"
@@ -54,4 +54,19 @@ tribes_dict = {
     Tribes.XINXI: 13,
     Tribes.YADAKK: 14,
     Tribes.ZEBASI: 15,
+}
+
+climates_dict = {
+    2: Tribes.AIMO,
+    4: Tribes.BARDUR,
+    6: Tribes.HOODRICK,
+    7: Tribes.IMPERIUS,
+    8: Tribes.KICKOO,
+    9: Tribes.LUXIDOOR,
+    10: Tribes.OUMAJI,
+    11: Tribes.QUETZALI,
+    12: Tribes.VENGIR,
+    13: Tribes.XINXI,
+    14: Tribes.YADAKK,
+    15: Tribes.ZEBASI,
 }
