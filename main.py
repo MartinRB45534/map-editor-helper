@@ -20,6 +20,22 @@ class View:
         self.root = tk.Tk()
         self.figsize = (16, 8)
 
+        # Map
+        if carte is not None:
+            cases = carte["map"]
+            taille = carte["size"]
+            # Is it a square?
+            if taille**2 == len(cases):
+                self.carte = [[cases[i * taille + j] for j in range(taille)] for i in range(taille)]
+                self.capitals = [(i, j) for i in range(taille) for j in range(taille) if i * taille + j in carte["capitals"]]
+                self.carte = [[{"tribu": climates_dict[case["climate"]], "terrain": case["terrain"], "ressource": case["resource"] if "resource" in case else "", "batiment": case["improvement"] if "improvement" in case else ""} for case in row] for row in self.carte]
+            else:
+                carte = None
+        if carte is None:
+            self.carte = [[{"tribu": "aimo", "terrain": "ocean", "ressource": "", "batiment": ""}]]
+            self.capitals = []
+        self.pos = (0, 0)
+
         # Buttons
         self.bq = tk.Button(master=self.root, text="Quit", command=self.root.quit)
         self.bq.grid(row=4, column=1, columnspan=2)
@@ -43,74 +59,127 @@ class View:
         self.bc = tk.Button(master=self.root, text="Contract", command=self.contract)
         self.bc.grid(row=2, column=3, sticky=tk.W)
         self.bcap = tk.Button(master=self.root, text="Make Capital", command=self.make_capital)
-        self.bcap.grid(row=3, column=2, columnspan=2)
+        self.bcap.grid(row=3, column=2, sticky=tk.E)
+        self.bred = tk.Button(master=self.root, text="Redraw", command=self.redraw)
+        self.bred.grid(row=3, column=3, sticky=tk.W)
 
         # Menus
-        self.tribe_var = tk.StringVar(value=list(Tribes)[0])
+        self.tribe_var = tk.StringVar(value=self.carte[self.pos[0]][self.pos[1]]["tribu"])
         self.tribe_menu = tk.OptionMenu(self.root, self.tribe_var,
                                         *list(Tribes),
                                         command=self.change_tribe,
                                         )
         self.tribe_menu.grid(row=2, column=4, sticky=tk.E)
-        self.resource_var = tk.StringVar(value=list(Resources)[0])
+
+        self.resource_var = tk.StringVar(value=self.carte[self.pos[0]][self.pos[1]]["ressource"])
         self.resource_menu = tk.OptionMenu(self.root, self.resource_var,
                                            *list(Resources),
                                            command=self.change_resource,
                                            )
         self.resource_menu.grid(row=3, column=4, sticky=tk.E)
 
-        self.improvement_var = tk.StringVar(value=list(Improvements)[0])
+        self.improvement_var = tk.StringVar(value=self.carte[self.pos[0]][self.pos[1]]["batiment"])
         self.improvement_menu = tk.OptionMenu(self.root, self.improvement_var,
                                                *list(Improvements),
                                                command=self.change_improvement,
                                                )
         self.improvement_menu.grid(row=3, column=5, sticky=tk.W)
 
-        self.terrain_var = tk.StringVar(value=list(Terrains)[0])
+        self.terrain_var = tk.StringVar(value=self.carte[self.pos[0]][self.pos[1]]["terrain"])
         self.terrain_menu = tk.OptionMenu(self.root, self.terrain_var,
                                            *list(Terrains),
                                            command=self.change_terrain,
                                            )
         self.terrain_menu.grid(row=2, column=5, sticky=tk.W)
 
-        # Map
-        if carte is not None:
-            cases = carte["map"]
-            nb_cases = len(cases)
-            # Is it a square?
-            if nb_cases ** 0.5 == int(nb_cases ** 0.5):
-                self.carte = [[cases[i * int(nb_cases ** 0.5) + j] for j in range(int(nb_cases ** 0.5))] for i in range(int(nb_cases ** 0.5))]
-                self.capitals = [(i, j) for i in range(int(nb_cases ** 0.5)) for j in range(int(nb_cases ** 0.5)) if i * int(nb_cases ** 0.5) + j in carte["capitals"]]
-                self.carte = [[{"tribu": climates_dict[case["climate"]], "terrain": case["terrain"], "ressource": case["resource"] if "resource" in case else "", "batiment": case["improvement"] if "improvement" in case else ""} for case in row] for row in self.carte]
-            else:
-                carte = None
-        if carte is None:
-            self.carte = [[{"tribu": "aimo", "terrain": "ocean", "ressource": "", "batiment": ""}]]
-            self.capitals = []
-        self.pos = (0, 0)
+        # Key bindings
+        self.root.bind("<Left>", lambda event: self.left())
+        self.root.bind("<Right>", lambda event: self.right())
+        self.root.bind("<Up>", lambda event: self.up())
+        self.root.bind("<Down>", lambda event: self.down())
+        self.root.bind("<space>", lambda event: self.space())
+        self.root.bind("<a>", lambda event: self.change_tribe("aimo"))
+        self.root.bind("<b>", lambda event: self.change_tribe("bardur"))
+        self.root.bind("<h>", lambda event: self.change_tribe("hoodrick"))
+        self.root.bind("<i>", lambda event: self.change_tribe("imperius"))
+        self.root.bind("<k>", lambda event: self.change_tribe("kickoo"))
+        self.root.bind("<l>", lambda event: self.change_tribe("luxidoor"))
+        self.root.bind("<o>", lambda event: self.change_tribe("oumaji"))
+        self.root.bind("<q>", lambda event: self.change_tribe("quetzali"))
+        self.root.bind("<v>", lambda event: self.change_tribe("vengir"))
+        self.root.bind("<x>", lambda event: self.change_tribe("xinxi"))
+        self.root.bind("<y>", lambda event: self.change_tribe("yadakk"))
+        self.root.bind("<z>", lambda event: self.change_tribe("zebasi"))
+        self.root.bind("<Control-s>", lambda event: self.save())
+        self.root.bind("<Return>", lambda event: self.redraw())
+
         self.draw()
         self.root.mainloop()
         exit()
 
+    def onclick(self, event) -> None:
+        """Find the tile that was clicked."""
+        x, y = event.xdata, event.ydata
+        if x is None or y is None:
+            return
+        centers = affiche(self.carte)[1]
+        # Find the closest tile
+        min_dist = 1000000
+        for i, row in enumerate(centers):
+            for j, center in enumerate(row):
+                dist = (center[0] - x)**2 + (center[1] - y)**2
+                if dist < min_dist:
+                    min_dist = dist
+                    pos = (i, j)
+        self.move(pos)
+        if event.dblclick:
+            self.make_capital()
+
+    def left(self) -> None:
+        """Change resource to the previous one in the list."""
+        case = self.carte[self.pos[0]][self.pos[1]]
+        case["ressource"] = list(Resources)[(list(Resources).index(case["ressource"]) - 1) % len(Resources)]
+        self.resource_var.set(case["ressource"])
+
+    def right(self) -> None:
+        """Change resource to the next one in the list."""
+        case = self.carte[self.pos[0]][self.pos[1]]
+        case["ressource"] = list(Resources)[(list(Resources).index(case["ressource"]) + 1) % len(Resources)]
+        self.resource_var.set(case["ressource"])
+
+    def up(self) -> None:
+        """Change terrain to the next one in the list."""
+        case = self.carte[self.pos[0]][self.pos[1]]
+        case["terrain"] = list(Terrains)[(list(Terrains).index(case["terrain"]) + 1) % len(Terrains)]
+        self.terrain_var.set(case["terrain"])
+
+    def down(self) -> None:
+        """Change terrain to the previous one in the list."""
+        case = self.carte[self.pos[0]][self.pos[1]]
+        case["terrain"] = list(Terrains)[(list(Terrains).index(case["terrain"]) - 1) % len(Terrains)]
+        self.terrain_var.set(case["terrain"])
+
+    def space(self) -> None:
+        """Change improvement to the next one in the list."""
+        case = self.carte[self.pos[0]][self.pos[1]]
+        case["batiment"] = list(Improvements)[(list(Improvements).index(case["batiment"]) + 1) % len(Improvements)]
+        self.improvement_var.set(case["batiment"])
+
     def change_tribe(self, tribe: tk.StringVar) -> None:
         """Change the tribe of the current tile."""
         self.carte[self.pos[0]][self.pos[1]]["tribu"] = tribe
-        self.redraw()
 
     def change_resource(self, resource: tk.StringVar) -> None:
         """Change the resource of the current tile."""
         self.carte[self.pos[0]][self.pos[1]]["ressource"] = resource
-        self.redraw()
 
     def change_improvement(self, improvement: tk.StringVar) -> None:
         """Change the improvement of the current tile."""
         self.carte[self.pos[0]][self.pos[1]]["batiment"] = improvement
-        self.redraw()
 
     def change_terrain(self, terrain: tk.StringVar) -> None:
         """Change the terrain of the current tile."""
         self.carte[self.pos[0]][self.pos[1]]["terrain"] = terrain
-        self.redraw()
 
     def save(self) -> None:
         """Save the map."""
@@ -136,7 +205,8 @@ class View:
                     capitals.append(i)
                 i += 1
         json = json[:-2] + '],\n'
-        json += f'"capitals": {capitals}\n'
+        json += f'"capitals": {capitals},\n'
+        json += f'"size": {len(self.carte)}\n'
         return json + '}'
 
     def move(self, new_pos: tuple[int, int]) -> None:
@@ -154,7 +224,6 @@ class View:
         self.resource_var.set(self.carte[self.pos[0]][self.pos[1]]["ressource"])
         self.improvement_var.set(self.carte[self.pos[0]][self.pos[1]]["batiment"])
         self.terrain_var.set(self.carte[self.pos[0]][self.pos[1]]["terrain"])
-        self.redraw()
 
     def goNW(self) -> None:
         """Go NW."""
@@ -177,8 +246,6 @@ class View:
         for i, row in enumerate(self.carte):
             self.carte[i] = row + [{"tribu": "aimo", "terrain": "ocean", "ressource": "", "batiment": ""}]
         self.carte = self.carte + [[{"tribu": "aimo", "terrain": "ocean", "ressource": "", "batiment": ""} for _ in range(len(self.carte[0]))]]
-        print("Extending map")
-        self.redraw()
 
     def contract(self) -> None:
         """Contract the map."""
@@ -191,12 +258,10 @@ class View:
             self.pos = (len(self.carte) - 1, self.pos[1])
         if 0 > self.pos[1] >= len(self.carte[0]):
             self.pos = (self.pos[0], len(self.carte[0]) - 1)
-        self.redraw()
 
     def make_capital(self) -> None:
         """Make the current tile a capital."""
-        self.capitals.append(copy(self.pos))
-        self.redraw()
+        self.capitals.append(copy(self.pos)) if self.pos not in self.capitals else self.capitals.remove(self.pos)
 
     def redraw(self) -> None:
         """Redraw the map."""
@@ -220,6 +285,7 @@ class View:
         # Add a point where we are
         ax1.scatter(centers[self.pos[0]][self.pos[1]][0], centers[self.pos[0]][self.pos[1]][1], c="red")
         ax1.set_axis_off()
+        fig.canvas.mpl_connect('button_press_event', self.onclick)
         self.canvas = FigureCanvasTkAgg(fig, master=self.root)
         self.canvas.draw()
         self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=2, columnspan=6)

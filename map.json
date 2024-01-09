@@ -98,5 +98,6 @@
     {"climate": 8, "improvement": "ruin", "terrain": "field"},
     {"climate": 8, "terrain": "mountain"},
     {"climate": 8, "terrain": "field"}],
-"capitals": [25, 58, 61, 84]
+"capitals": [25, 58, 61, 84],
+"size": 10
 }
