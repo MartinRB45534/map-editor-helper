@@ -9,7 +9,7 @@ import cv2 as cv #pylint: disable=import-error
 from Carte.Items import ASSETS
 
 
-def affiche(carte, tailles=[120,200], assets=ASSETS, tile_centers = None, marges = [0,0,0,0]):
+def affiche(carte: list[list], tailles=[120,200], assets=ASSETS, tile_centers = None, marges = [0,0,0,0]):
     "Affiche"
     tailles = copy(tailles)
     background = np.full((int(tailles[0]*(len(carte)+6)),int(tailles[1]*(len(carte[0])+5)),4),0,np.uint8)
@@ -21,8 +21,8 @@ def affiche(carte, tailles=[120,200], assets=ASSETS, tile_centers = None, marges
     else:
         background = np.full((int(max([tile_center[1] for ligne in tile_centers for tile_center in ligne]) + tailles[0]*3),int(max([tile_center[0] for ligne in tile_centers for tile_center in ligne]) + tailles[1]*3),4),0,np.uint8)
         background[:,:,3]=255
-    for i, row in enumerate(carte):
-        for j, tile in enumerate(row):
+    for j, row in enumerate(reversed(carte)):
+        for i, tile in enumerate(reversed(row)):
             for key in ["terrain","ressource","batiment"]:
                 if tile[key] == "":
                     continue
