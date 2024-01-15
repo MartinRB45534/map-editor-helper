@@ -125,8 +125,8 @@ class View:
         centers = affiche(self.carte)[1]
         # Find the closest tile
         min_dist = 1000000
-        for i, row in enumerate(centers):
-            for j, center in enumerate(row):
+        for j, row in enumerate(reversed(centers)):
+            for i, center in enumerate(reversed(row)):
                 dist = (center[0] - x)**2 + (center[1] - y)**2
                 if dist < min_dist:
                     min_dist = dist
@@ -270,7 +270,8 @@ class View:
         b, centers = affiche(self.carte)
         plt.gca().imshow(b)
         # Add a point where we are
-        plt.gca().scatter(centers[self.pos[0]][self.pos[1]][0], centers[self.pos[0]][self.pos[1]][1], c="red")
+        center = centers[-self.pos[1]-1][-self.pos[0]-1]
+        plt.gca().scatter(center[0], center[1], c="red")
         plt.gca().set_axis_off()
         self.canvas.draw()
 
@@ -283,7 +284,8 @@ class View:
         b, centers = affiche(self.carte)
         ax1.imshow(b)
         # Add a point where we are
-        ax1.scatter(centers[self.pos[0]][self.pos[1]][0], centers[self.pos[0]][self.pos[1]][1], c="red")
+        center = centers[-self.pos[1]-1][-self.pos[0]-1]
+        ax1.scatter(center[0], center[1], c="red")
         ax1.set_axis_off()
         fig.canvas.mpl_connect('button_press_event', self.onclick)
         self.canvas = FigureCanvasTkAgg(fig, master=self.root)

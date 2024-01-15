@@ -11,7 +11,7 @@
             "program": "main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["small ocean.json"]
+            "args": ["map.json"]
         }
     ]
 }
