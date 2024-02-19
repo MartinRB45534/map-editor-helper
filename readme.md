@@ -1,6 +1,6 @@
 # Map editor helper !
 
-The map editor helper provides an easy way to edit maps and save them in a format compatible with the polymod map editor.
+The map editor helper provides an easy way to edit maps and save them in a format compatible with the polymod map loader.
 
 ## Usage
 
@@ -8,7 +8,7 @@ The map can be extend or reduced and the following tile properties modified :
  - Tribe (special tribes not available);
  - Terrain;
  - Ressource (boat and ship are placeholders for aquacrop and starfish respectively at the moment);
- - City/ruin (as of january the 9th polymod map editor does not place ruins);
+ - City/ruin (as of january the 9th polymod map loader does not place ruins);
  - Capitals (shown in the window title when on a capital tile).
 
 For performance reasons, changes are not displayed by default.
@@ -44,3 +44,5 @@ Quitting does not save. Saving will overwrite the map.json file so make sure to 
 Please tell me about any errors you might encounter.
 
 If you think you can fix it yourself or have an idea for an improvement, feel free to open a pull request.
+
+Current missing features are aquacrop, starfish and special tribe sprites.
